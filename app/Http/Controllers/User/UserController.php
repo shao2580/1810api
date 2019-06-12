@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Model\UserModel;
 use Illuminate\Support\Facades\Redis;
+use GuzzleHttp\Client;
 
 class UserController extends Controller
 {
@@ -81,7 +82,6 @@ class UserController extends Controller
         //     'name'=>'张三、李四',
         //     'pass'=>'1234567'
         // ];
-
         $url = 'http://www.1810api.com/login';
 
         $ch = curl_init($url);
@@ -121,5 +121,46 @@ class UserController extends Controller
         
     }
 
+    /*加密*/
+    public function encrypt()
+    {
+        $data_post = '张三李四';
+        
+        $data_post = base64_encode($data_post);
 
-}
+        $url = 'http://www.lumen.com/decrypt';
+
+        $client = new Client();
+        $res  =  $client ->request('POST',$url,[ 
+                'body'  =>  $data_post 
+            ]);
+        echo $res->getBody();
+    }
+
+    /*对称加密*/
+    public function encrypt1()
+    {
+        $data = '张三李四';             //数据
+        $data = base64_encode($data);
+
+        $method = 'AES-128-CBC';       //密码方式
+        $key = 'password';             //密码
+            //  OPENSSL_RAW_DATA       //ssl原始数据  或  OPENSSL_ZERO_PADDING 填充 0
+        $iv = 'qazwsxedcrfvtgby';      //初始化向量  16位
+
+        $enc_data = openssl_encrypt($data,$method,$key,OPENSSL_RAW_DATA,$iv);
+        // var_dump($enc_data);
+
+        $client = new Client();
+        $url ='http://www.lumen.com/decrypt1';
+        $res = $client->request('POST',$url,[
+                'body'=>$enc_data
+            ]);
+        return  $res->getBody();
+    }
+
+
+
+
+
+}//最后一行
