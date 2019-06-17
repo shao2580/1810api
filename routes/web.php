@@ -27,3 +27,10 @@ Route::any('/login','User\UserController@login');     //测试 登录
 
 Route::get('/encrypt','User\UserController@encrypt');     //测试 加密
 Route::get('/encrypt1','User\UserController@encrypt1');     // 对称加密
+
+Route::get('/encrsa','User\UserController@encrsa');     // 非对称加密  --私钥加密
+
+Route::get('/sign','User\UserController@sign');     // 非对称加密 -私钥加密 --签名
+
+
+

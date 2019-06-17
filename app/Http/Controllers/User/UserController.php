@@ -159,8 +159,101 @@ class UserController extends Controller
         return  $res->getBody();
     }
 
+    /*非对称加密  ----私钥加密--*/
+    public function encrsa()
+    {
+        $data = '今天星期四';
 
+        //获取私钥路径
+        $enc_path = storage_path('keys/priv.pem');
 
+        $private_key = openssl_get_privatekey('file://'.$enc_path);
+        //私钥加密
+        openssl_private_encrypt($data,$enc_data,$private_key);
+
+        var_dump($enc_data);echo '<hr/>';
+
+        // //获取公钥
+        // $dec_path = storage_path('keys/pub.key');
+        // $public_key = openssl_get_publickey('file://'.$dec_path);
+        // //公钥解密
+        // openssl_public_decrypt($enc_data,$dec_data,$public_key);
+
+        // var_dump($dec_data); echo'<hr/>';
+
+         /*发送服务端*/
+        $url = 'http://www.lumen.com/decrsa';
+        $client = new Client();
+        $res = $client->request('post',$url,[
+            'body'=>$enc_data
+        ]);
+        return $res->getBody();
+    }
+
+    /*非对称机密签名*/
+    public function sign()
+    {
+        //原始数据
+        $data = [
+            'order_id'          => '123456',
+            'order_amount'      => '300',
+            'add_time'          => '123334535',
+            'uid'               => '2233'
+        ];
+        ksort($data);
+
+        //拼接数据
+        $str0 = '';
+        foreach ($data as $k => $v) {
+            $str0 .= $k.'='.$v.'&'; 
+        }
+        $str=rtrim($str0,'&');
+
+        //私钥加密
+        $enc_path = storage_path('keys/priv.pem');
+        //签名
+        openssl_sign($str,$sign0,openssl_get_privatekey('file://'.$enc_path));
+
+        $sign = base64_encode($sign0);
+        $data['sign']=$sign;
+
+        /*发送服务端*/
+        $url = 'http://www.lumen.com/decsign';
+        $client = new Client();
+        $res = $client->request('post',$url,[
+            'form_params'=>$data
+        ]);
+        return $res->getBody();
+        
+    }
+
+    /*支付宝书记支付*/
+    public function alipay()
+    {
+        $url = 'https://openapi.alipaydev.com/gateway.do';
+
+        //请求参数
+        $biz_content = [
+            'subject'       =>'手机'.mt_rand(11111,99999).time(),           //商品标题
+            'out_trade_no'  =>'1810'.mt_rand(11111,99999).time(),            //订单号  
+            'total_amount'  =>mt_rand(1,999),                               //订单总金额
+            'product_code'  =>'QUICK_WAP_WAY'                              //产品码             
+        ];
+
+        //公共参数
+        $data = [
+            'app_id'        =>'2016092700609180',
+            'method'        =>'alipay.trade.wap.pay',
+            'charset'       =>'utf-8',
+            'sign_type'     =>'RSA2',
+            'timestamp'     =>date('Y-m-d H:i:s');
+            'version'       =>'1.0',
+            'biz_content'   =>json_encode($biz_content)
+        ];
+
+        //参数 缺 签名 
+        
+    }
 
 
 }//最后一行
