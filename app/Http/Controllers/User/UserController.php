@@ -246,7 +246,7 @@ class UserController extends Controller
             'method'        =>'alipay.trade.wap.pay',
             'charset'       =>'utf-8',
             'sign_type'     =>'RSA2',
-            'timestamp'     =>date('Y-m-d H:i:s');
+            'timestamp'     =>date('Y-m-d H:i:s'),
             'version'       =>'1.0',
             'biz_content'   =>json_encode($biz_content)
         ];
