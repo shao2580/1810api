@@ -81,7 +81,7 @@
 
             <div class="content">
                 <div class="title m-b-md">
-                    Laravel
+                    www.1810api.com
                 </div>
 
                 <div class="links">

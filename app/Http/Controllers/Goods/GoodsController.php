@@ -4,82 +4,80 @@ namespace App\Http\Controllers\Goods;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Redis;
+use GuzzleHttp\Client;
+use App\Model\GoodsModel;
+use App\Model\UserModel;
+use App\Model\CartModel;
 
 class GoodsController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+    /*商品列表面*/
+    public function productList()
     {
-        //
+
+        $data = GoodsModel::where(['is_del'=>1])->paginate(6);
+
+        return view('goods/product-list',['data'=>$data]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    /*商品-详情*/
+    public function shopSingle(Request $request)
     {
-        //
+        $goods_id = $request->input();
+        if ($goods_id) {
+             $data = GoodsModel::where(['goods_id'=>$goods_id])->get();
+
+            return view('goods/shop-single',['data'=>$data]);
+        }else{
+            $data = GoodsModel::inRandomOrder()->take(1)->get();
+
+            return view('goods/shop-single',['data'=>$data]);
+        }
+
+       
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
+    /*购物车*/
+    public function cart(Request $request)
     {
-        //
+        $data = CartModel::where(['is_del'=>1])->get();
+
+        return view('goods/cart',['data'=>$data]);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
+    /*结算*/
+    public function checkout()
     {
-        //
+        return view('goods/checkout');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
+    /*博客*/
+    public function blog()
     {
-        //
+        return view('goods/blog');
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
+    /*博客单*/
+    public function blogSingle()
     {
-        //
+        return view('goods/blog-single');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
+    /*收藏页*/
+    public function wishlist()
     {
-        //
+        return view('goods/wishlist');
     }
-}
+
+
+
+
+
+
+
+
+
+
+}//最后一行
+?>

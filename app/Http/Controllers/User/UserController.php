@@ -4,13 +4,144 @@ namespace App\Http\Controllers\User;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Model\UserModel;
 use Illuminate\Support\Facades\Redis;
-use GuzzleHttp\Client;
+use Illuminate\Support\Str;
+
+use App\Model\UserModel;
+use App\Model\GoodsModel;
 
 class UserController extends Controller
 {
+    /*主页面*/
+    public function index()
+    {   
+        //新品
+        $newData = GoodsModel::where(['is_new'=>1])->take(4)->get();  //随机 ->inRandomOrder()
+        //精品
+        $bestData = GoodsModel::where(['is_best'=>1])->paginate(4);
+     
+       
+        return view('index',compact('newData','bestData'));
+    }
 
+    /*注册页*/
+    public function reg(Request $request)
+    {
+        if ($request->isMethod('post')){
+            $data = $request->all();
+            if (!empty($data)) {
+                //判断用户名唯一
+                $name = UserModel::where(['name'=>$data['name']])->first();           
+                if ($name) {
+                    $returnMsg = [
+                        'code'=>1001,
+                        'msg'=>'用户名已注册，请重新输入！'
+                    ];
+                    return json_encode($returnMsg);
+                } 
+
+            //查数据库 判断邮箱唯一 
+            $email = UserModel::where(['email'=>$data['email']])->first();
+            if ($email) {
+                   $returnMsg = [
+                        'code'=>1002,
+                        'msg'=>'邮箱已注册，请重新输入！'
+                    ];
+                    return json_encode($returnMsg);
+                }    
+
+            //密码哈希处理
+            $password = password_hash($data['password'],PASSWORD_BCRYPT);
+            $data = [
+                'name'=>$data['name'],
+                'password'=>$password,
+                'email'=>$data['email']
+            ];
+
+            $res = UserModel::insert($data);
+            if ($res) {
+                $returnMsg = [
+                        'code'=>1000,
+                        'msg'=>'注册成功！'
+                    ];
+                    return json_encode($returnMsg);
+            }
+
+            } 
+        }
+        return view('user/reg');
+    }
+
+    /*登录页*/
+    public function login(Request $request)
+    {
+        if ($request->isMethod('post')) {
+            $name = $request->input('name');
+            $password = $request->input('password');
+
+            //查数据库 验证密码
+            $res = UserModel::where(['name'=>$name])->first();
+            if ($res) {
+                if (password_verify($password,$res->password)) {
+                    //密码通过 生成token 缓存保存
+                    $token = substr(md5($res->id.Str::random(8).mt_rand(11111,99999)),10,10);
+                    //token的键
+                    $redis_key = 'user-token:'.$res->id.'';
+                    
+                    Redis::set($redis_key,$token);
+                    Redis::expire($redis_key,3600);
+
+                    //返回数据
+                    $returnMsg = [
+                        'code'=>1000,
+                        'msg'=>'登陆成功',
+                        'data'=>[
+                            'token'=>$token,
+                            'id'=>$res->id
+                        ]
+                    ];
+                    return json_encode($returnMsg);
+                }else{
+                     $returnMsg = [
+                        'code'=>1001,
+                        'msg'=>'用户名或密码错误，请重新输入！'
+                       
+                    ];
+                    return json_encode($returnMsg);
+                }
+            }else{
+                  $returnMsg = [
+                        'code'=>1002,
+                        'msg'=>'用户名或密码错误，请重新输入！'
+                       
+                    ];
+                    return json_encode($returnMsg);
+            }
+
+
+        }
+        return view('user/login');
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /*************api 接口-测试-客户端*******************/
     public function login1()
     {
     	$key = 'tmp:1810';
@@ -27,7 +158,6 @@ class UserController extends Controller
     	$uid = UserModel::insertGetId($data);
     	var_dump($uid);
     }
-
 
     /*get curl*/
     public function curl1()
@@ -46,7 +176,6 @@ class UserController extends Controller
 
         //关闭curl
         curl_close($ch);
-
     }
 
     /*获取token*/
@@ -101,12 +230,10 @@ class UserController extends Controller
         // var_dump($error);
 
         curl_close($ch);
-
     }
 
-
     /*测试 form 表单 post提交 --登录*/
-    public function login(Request $request)
+    public function login2(Request $request)
     {
         if ($request->isMethod('post')) {
 
@@ -117,8 +244,7 @@ class UserController extends Controller
             dd($_POST);
         }else{
             return view('user/login');
-        }
-        
+        }        
     }
 
     /*加密*/
@@ -191,7 +317,7 @@ class UserController extends Controller
     }
 
     /*非对称机密签名*/
-    public function sign()
+    public function sign1()
     {
         //原始数据
         $data = [
@@ -223,12 +349,11 @@ class UserController extends Controller
         $res = $client->request('post',$url,[
             'form_params'=>$data
         ]);
-        return $res->getBody();
-        
+        return $res->getBody();        
     }
 
     /*支付宝书记支付*/
-    public function alipay()
+    public function alipay1()
     {
         $url = 'https://openapi.alipaydev.com/gateway.do';
 
@@ -251,9 +376,10 @@ class UserController extends Controller
             'biz_content'   =>json_encode($biz_content)
         ];
 
-        //参数 缺 签名 
-        
+        //参数 缺 签名         
     }
 
 
 }//最后一行
+
+?>
