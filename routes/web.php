@@ -37,11 +37,6 @@ Route::get('/blog','Goods\GoodsController@blog');   	           //博客
 Route::get('/blog-single','Goods\GoodsController@blogSingle');     //博客单
 
 
-
-
-
-
-
 /**********************************/
 
 /* api 接口-测试-客户端 */
@@ -61,9 +56,24 @@ Route::get('/sign1','User\UserController@sign1');     // 非对称加密 -私钥
 Route::match(['get','post'],'/regkao','KaoController@regkao');  //考试注册
 Route::match(['get','post'],'/loginkao','KaoController@loginkao');  //登录考试
 
-
 Route::prefix('/')->middleware('ddlogin')->group(function(){
 	Route::get('/conterkao','KaoController@conterkao');   //个人中心
 	Route::get('/loginoutkao','KaoController@loginoutkao'); 		 //退出	
 
+});
+
+/*******************************************************************/
+// Route::resources([
+// 	'photos' => 'PhotoController',
+// 	'posts' => 'PostController'
+// ]);
+
+/*restful风格*/
+Route::resource('students','Students\StudentsController');   //学生 CURD
+
+
+Route::match(['get','post'],'exam/login','User\ExamController@login');   //jwt 登录 生成token
+
+Route::group(['prefix'=>'exam','middleware'=>'jwtauth'],function(){
+	Route::match(['get','post'],'conter','User\ExamController@conter');   //个人中心
 });

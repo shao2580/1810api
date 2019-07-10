@@ -29,8 +29,8 @@ class DandianLogin
             if ($assion_token ==$redis_token) {
                  return $next($request);
             }else{
-                echo '提示在其他地方登录，请确认是否是本人操作';
-                header('Refresh:2;url=/loginkao');die;
+                echo '您的账号在其他地方登录，请确认是否是本人操作';
+                header('Refresh:3;url=/loginkao');die;
             }
 
             // $res = KaoUserModel::where(['id'=>$id])->first();

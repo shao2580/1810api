@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Str;
 use GuzzleHttp\Client;
 
+
 class KaoController extends Controller
 {
     /*考试注册*/
@@ -46,7 +47,7 @@ class KaoController extends Controller
 
             $sign = base64_encode($sign0);
             $data['sign']=$sign;
-            dump($data);die;
+            // dump($data);die;
             /*发送服务端*/
             $url = 'http://www.lumen.com/regkao';
             $ch = curl_init($url);
@@ -120,5 +121,10 @@ class KaoController extends Controller
     {
         session()->flash('id');
         echo '退出成功';
+    }
+
+    public function gettoken()
+    {
+
     }
 }
